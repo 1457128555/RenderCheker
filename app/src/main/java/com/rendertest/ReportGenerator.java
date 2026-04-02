@@ -20,10 +20,21 @@ import java.util.Locale;
 public class ReportGenerator {
     private static final String TAG = "RenderTest";
 
-    public static File generateAndSave(Context context, DeviceInfo deviceInfo, List<TestResult> results) {
+    public static class Result {
+        public final File file;
+        public final String json;
+
+        Result(File file, String json) {
+            this.file = file;
+            this.json = json;
+        }
+    }
+
+    public static Result generateAndSave(Context context, DeviceInfo deviceInfo, List<TestResult> results) {
         try {
             String json = generateJson(deviceInfo, results);
-            return saveToFile(context, deviceInfo, json);
+            File file = saveToFile(context, deviceInfo, json);
+            return new Result(file, json);
         } catch (Exception e) {
             Log.e(TAG, "Failed to generate report", e);
             return null;

@@ -54,15 +54,15 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onTestResults(DeviceInfo deviceInfo, List<TestResult> results) {
                 // 自动保存报告
-                File report = ReportGenerator.generateAndSave(MainActivity.this, deviceInfo, results);
+                ReportGenerator.Result reportResult = ReportGenerator.generateAndSave(MainActivity.this, deviceInfo, results);
 
                 runOnUiThread(() -> {
                     adapter.setResults(results);
-                    if (report != null) {
-                        lastReportFile = report;
+                    if (reportResult != null && reportResult.file != null) {
+                        lastReportFile = reportResult.file;
                         btnShare.setVisibility(View.VISIBLE);
                         Toast.makeText(MainActivity.this,
-                                "报告已保存: " + report.getName(), Toast.LENGTH_SHORT).show();
+                                "报告已保存: " + reportResult.file.getName(), Toast.LENGTH_SHORT).show();
                     }
                 });
             }
