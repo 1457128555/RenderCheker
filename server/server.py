@@ -2,12 +2,13 @@ import json
 import os
 import sqlite3
 
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, send_file
 
 app = Flask(__name__)
 
 DB_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
 DB_PATH = os.path.join(DB_DIR, "reports.db")
+APK_DIR = os.path.join(DB_DIR, "apk")
 
 
 @app.template_filter("fromjson")
@@ -20,6 +21,16 @@ def get_db():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
+
+
+def get_current_apk():
+    """返回当前 APK 文件路径，若不存在则返回 None。"""
+    if not os.path.isdir(APK_DIR):
+        return None
+    for fname in os.listdir(APK_DIR):
+        if fname.endswith(".apk"):
+            return os.path.join(APK_DIR, fname)
+    return None
 
 
 def init_db():
@@ -43,6 +54,51 @@ def init_db():
     """)
     conn.commit()
     conn.close()
+
+
+@app.route("/api/apk/info", methods=["GET"])
+def apk_info():
+    apk_path = get_current_apk()
+    if apk_path is None:
+        return jsonify({"exists": False})
+    stat = os.stat(apk_path)
+    return jsonify({
+        "exists": True,
+        "filename": os.path.basename(apk_path),
+        "size": stat.st_size,
+    })
+
+
+@app.route("/api/apk/upload", methods=["POST"])
+def apk_upload():
+    if "file" not in request.files:
+        return jsonify({"error": "No file field"}), 400
+    f = request.files["file"]
+    if not f.filename.endswith(".apk"):
+        return jsonify({"error": "Only .apk files are allowed"}), 400
+
+    os.makedirs(APK_DIR, exist_ok=True)
+    # 删除旧 APK
+    for old in os.listdir(APK_DIR):
+        if old.endswith(".apk"):
+            os.remove(os.path.join(APK_DIR, old))
+
+    filename = os.path.basename(f.filename)
+    f.save(os.path.join(APK_DIR, filename))
+    return jsonify({"status": "ok", "filename": filename})
+
+
+@app.route("/apk/download", methods=["GET"])
+def apk_download():
+    apk_path = get_current_apk()
+    if apk_path is None:
+        return jsonify({"error": "No APK uploaded yet"}), 404
+    return send_file(
+        apk_path,
+        mimetype="application/vnd.android.package-archive",
+        as_attachment=True,
+        download_name=os.path.basename(apk_path),
+    )
 
 
 @app.route("/api/report", methods=["POST"])

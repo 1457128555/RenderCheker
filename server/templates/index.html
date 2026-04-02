@@ -28,11 +28,95 @@
   .status-pass { color: #22c55e; font-weight: 600; }
   .status-fail { color: #ef4444; font-weight: 600; }
   .status-crash { color: #dc2626; font-weight: 700; }
-  .empty { text-align: center; padding: 40px; color: #999; }
+  .apk-section { background: #fff; border-radius: 8px; padding: 20px 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 32px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .apk-section .apk-info { flex: 1; min-width: 200px; }
+  .apk-section .apk-info .apk-name { font-weight: 600; font-size: 15px; }
+  .apk-section .apk-info .apk-meta { font-size: 13px; color: #888; margin-top: 2px; }
+  .btn { display: inline-block; padding: 9px 18px; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; border: none; text-decoration: none; }
+  .btn-primary { background: #3b82f6; color: #fff; }
+  .btn-primary:hover { background: #2563eb; }
+  .btn-success { background: #22c55e; color: #fff; }
+  .btn-success:hover { background: #16a34a; }
+  .btn-label { background: #f3f4f6; color: #374151; }
+  .btn-label:hover { background: #e5e7eb; }
+  #upload-form { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  #apk-file { display: none; }
+  #upload-status { font-size: 13px; color: #888; }
 </style>
 </head>
 <body>
 <h1>RenderTest Dashboard</h1>
+
+<div class="apk-section">
+  <div class="apk-info">
+    <div class="apk-name" id="apk-name">无 APK</div>
+    <div class="apk-meta" id="apk-meta">尚未上传任何 APK</div>
+  </div>
+  <form id="upload-form">
+    <input type="file" id="apk-file" accept=".apk">
+    <label for="apk-file" class="btn btn-label">选择 APK</label>
+    <button type="submit" class="btn btn-primary">上传</button>
+    <a id="download-btn" class="btn btn-success" style="display:none" href="/render/apk/download">下载 APK</a>
+    <span id="upload-status"></span>
+  </form>
+</div>
+
+<script>
+(function () {
+  function fmtSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / 1048576).toFixed(1) + ' MB';
+  }
+
+  function refreshApkInfo() {
+    fetch('/render/api/apk/info')
+      .then(r => r.json())
+      .then(data => {
+        if (data.exists) {
+          document.getElementById('apk-name').textContent = data.filename;
+          document.getElementById('apk-meta').textContent = '大小：' + fmtSize(data.size);
+          document.getElementById('download-btn').style.display = '';
+        } else {
+          document.getElementById('apk-name').textContent = '无 APK';
+          document.getElementById('apk-meta').textContent = '尚未上传任何 APK';
+          document.getElementById('download-btn').style.display = 'none';
+        }
+      });
+  }
+
+  refreshApkInfo();
+
+  var fileInput = document.getElementById('apk-file');
+  var label = document.querySelector('label[for="apk-file"]');
+  fileInput.addEventListener('change', function () {
+    label.textContent = this.files[0] ? this.files[0].name : '选择 APK';
+  });
+
+  document.getElementById('upload-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var file = fileInput.files[0];
+    if (!file) { alert('请先选择 APK 文件'); return; }
+    var status = document.getElementById('upload-status');
+    status.textContent = '上传中…';
+    var fd = new FormData();
+    fd.append('file', file);
+    fetch('/render/api/apk/upload', { method: 'POST', body: fd })
+      .then(r => r.json())
+      .then(data => {
+        if (data.status === 'ok') {
+          status.textContent = '上传成功！';
+          label.textContent = '选择 APK';
+          fileInput.value = '';
+          refreshApkInfo();
+        } else {
+          status.textContent = '上传失败：' + (data.error || '未知错误');
+        }
+      })
+      .catch(() => { status.textContent = '网络错误，上传失败'; });
+  });
+})();
+</script>
 
 {% if summary.total_reports == 0 %}
 <div class="empty">No reports yet. Run tests on a device to see results here.</div>
