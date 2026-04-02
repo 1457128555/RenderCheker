@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit;
 
 public class ReportUploader {
     private static final String TAG = "RenderTest";
-    private static final String SERVER_URL = "http://10.0.2.2:5000/api/report";
+    private static final String SERVER_URL = "https://chensheng777.top/render/api/report";
 
     private static final OkHttpClient client = new OkHttpClient.Builder()
             .connectTimeout(10, TimeUnit.SECONDS)
