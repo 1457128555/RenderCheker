@@ -3,8 +3,6 @@ package com.rendertest.tests;
 import android.opengl.GLES20;
 import android.opengl.GLES30;
 
-import com.rendertest.model.TestResult;
-
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
@@ -26,7 +24,13 @@ public abstract class ScenarioBaseTest extends BaseGLTest {
      */
     protected int buildProgram(String vertexSource, String fragmentSource) {
         int vs = compileAndGetShader(GLES20.GL_VERTEX_SHADER, vertexSource);
-        int fs = compileAndGetShader(GLES20.GL_FRAGMENT_SHADER, fragmentSource);
+        int fs;
+        try {
+            fs = compileAndGetShader(GLES20.GL_FRAGMENT_SHADER, fragmentSource);
+        } catch (RuntimeException e) {
+            GLES20.glDeleteShader(vs);
+            throw e;
+        }
 
         int program = GLES20.glCreateProgram();
         if (program == 0) throw new RuntimeException("glCreateProgram returned 0");
@@ -89,6 +93,8 @@ public abstract class ScenarioBaseTest extends BaseGLTest {
                 width, height, 0, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, null);
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST);
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_NEAREST);
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
 
         GLES20.glFramebufferTexture2D(GLES20.GL_FRAMEBUFFER,
                 GLES20.GL_COLOR_ATTACHMENT0, GLES20.GL_TEXTURE_2D, textures[0], 0);
@@ -106,6 +112,7 @@ public abstract class ScenarioBaseTest extends BaseGLTest {
      */
     protected void destroyFBO(int[] fboAndTex) {
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
         GLES20.glDeleteFramebuffers(1, new int[]{fboAndTex[0]}, 0);
         GLES20.glDeleteTextures(1, new int[]{fboAndTex[1]}, 0);
     }
@@ -164,7 +171,7 @@ public abstract class ScenarioBaseTest extends BaseGLTest {
             int r = pixels.get() & 0xFF;
             int g = pixels.get() & 0xFF;
             int b = pixels.get() & 0xFF;
-            int a = pixels.get() & 0xFF;
+            pixels.get(); // skip alpha
             if (r > threshold || g > threshold || b > threshold) {
                 count++;
             }
@@ -210,7 +217,6 @@ public abstract class ScenarioBaseTest extends BaseGLTest {
      * 销毁全屏四边形资源。
      */
     protected void destroyFullscreenQuad(int[] vaoAndVbo) {
-        GLES20.glDisableVertexAttribArray(0);
         GLES20.glDeleteBuffers(1, new int[]{vaoAndVbo[1]}, 0);
         GLES30.glBindVertexArray(0);
         GLES30.glDeleteVertexArrays(1, new int[]{vaoAndVbo[0]}, 0);
