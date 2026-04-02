@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/background">
+
+    <!-- 设备信息卡片 -->
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="12dp"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="2dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="设备信息"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary" />
+
+            <TextView
+                android:id="@+id/tv_device_info"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="正在初始化 GL 上下文..."
+                android:textSize="13sp"
+                android:textColor="@color/text_secondary"
+                android:fontFamily="monospace" />
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
+    <!-- EGL 上下文版本提示 + 分享按钮 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="16dp"
+        android:paddingBottom="4dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="EGL 上下文: GLES 2.0 | 测试 3.x API 兼容性"
+            android:textSize="12sp"
+            android:textColor="@color/text_secondary" />
+
+        <Button
+            android:id="@+id/btn_share"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:text="分享报告"
+            android:textSize="12sp"
+            android:visibility="gone" />
+    </LinearLayout>
+
+    <!-- 测试结果列表 -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_test_results"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:paddingHorizontal="12dp" />
+
+    <!-- 隐藏的 GLSurfaceView -->
+    <android.opengl.GLSurfaceView
+        android:id="@+id/gl_surface_view"
+        android:layout_width="1dp"
+        android:layout_height="1dp"
+        android:visibility="visible" />
+
+</LinearLayout>
