@@ -7,8 +7,11 @@ import android.util.Log;
 import com.rendertest.model.DeviceInfo;
 import com.rendertest.model.TestResult;
 import com.rendertest.tests.GLES30Tests;
+import com.rendertest.tests.GLES30ScenarioTests;
 import com.rendertest.tests.GLES31Tests;
+import com.rendertest.tests.GLES31ScenarioTests;
 import com.rendertest.tests.GLES32Tests;
+import com.rendertest.tests.GLES32ScenarioTests;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,6 +55,15 @@ public class TestRenderer implements GLSurfaceView.Renderer {
 
         Log.i(TAG, "=== GLES 3.2 测试 ===");
         allResults.addAll(new GLES32Tests().runAll());
+
+        Log.i(TAG, "=== GLES 3.0 场景测试 ===");
+        allResults.addAll(new GLES30ScenarioTests().runAll());
+
+        Log.i(TAG, "=== GLES 3.1 场景测试 ===");
+        allResults.addAll(new GLES31ScenarioTests().runAll());
+
+        Log.i(TAG, "=== GLES 3.2 场景测试 ===");
+        allResults.addAll(new GLES32ScenarioTests().runAll());
 
         callback.onTestResults(deviceInfo, allResults);
     }
