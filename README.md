@@ -126,14 +126,16 @@ Android 设备的 GPU 驱动实现各异。本工具通过在 GLES 2.0 上下文
 
 ## 已测试设备
 
-| 设备 | GPU | Android | 结果 |
-|------|-----|---------|------|
-| Pixel 9 | Mali-G715 | 16 | 33/33 PASS（调用级） |
+| 设备 | GPU | Android | 调用级 | 场景 |
+|------|-----|---------|--------|------|
+| Pixel 9 | Mali-G715 | 16 | 33/33 PASS | — |
+| vivo 1906 | Adreno 505 | 9 | 33/33 PASS | 11/11 PASS (VERIFIED) |
 
 ## 技术细节
 
 - 纯 Java，无第三方依赖
 - EGL 上下文版本：2.0
+- 调用级测试中 draw call 类 API（`glDrawArraysInstanced`、`glDrawArraysIndirect`）不执行实际绘制，仅验证 API 入口点和 buffer 绑定，避免无 shader program 时触发驱动 SIGSEGV（已在 Adreno 505 上复现）。完整的 draw call 验证由场景测试负责
 - Android SDK GLES32 Java binding 中 `glDebugMessageCallback` 等 debug 系列 API 未实现，Debug Output 测试仅验证 `glEnable/glIsEnabled`
 
 ## License
