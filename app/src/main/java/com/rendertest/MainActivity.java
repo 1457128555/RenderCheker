@@ -65,6 +65,10 @@ public class MainActivity extends AppCompatActivity {
                                 "报告已保存: " + reportResult.file.getName(), Toast.LENGTH_SHORT).show();
                     }
                 });
+
+                if (reportResult != null && reportResult.json != null) {
+                    ReportUploader.upload(reportResult.json);
+                }
             }
         }));
         glSurfaceView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
